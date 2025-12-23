@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lumière Journal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+              serif: ['"Roboto"', 'serif'],
+            },
+            colors: {
+              // Using CSS variables for dynamic theming
+              primary: {
+                50: 'var(--color-primary-50)',
+                100: 'var(--color-primary-100)',
+                200: 'var(--color-primary-200)',
+                300: 'var(--color-primary-300)',
+                400: 'var(--color-primary-400)',
+                500: 'var(--color-primary-500)',
+                600: 'var(--color-primary-600)',
+                700: 'var(--color-primary-700)',
+                800: 'var(--color-primary-800)',
+                900: 'var(--color-primary-900)',
+              },
+              surface: {
+                50: '#fdf8f6',
+                100: '#f5f5f4',
+                200: '#e7e5e4',
+                300: '#d6d3d1',
+              }
+            },
+            animation: {
+              'blob': 'blob 7s infinite',
+              'gradient-xy': 'gradient-xy 15s ease infinite',
+            },
+            keyframes: {
+              blob: {
+                '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                '100%': { transform: 'translate(0px, 0px) scale(1)' },
+              },
+              'gradient-xy': {
+                '0%, 100%': {
+                    'background-size': '200% 200%',
+                    'background-position': 'left center'
+                },
+                '50%': {
+                    'background-size': '200% 200%',
+                    'background-position': 'right center'
+                }
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      :root {
+        /* Default Blue Theme */
+        --color-primary-50: #f0f9ff;
+        --color-primary-100: #e0f2fe;
+        --color-primary-200: #bae6fd;
+        --color-primary-300: #7dd3fc;
+        --color-primary-400: #38bdf8;
+        --color-primary-500: #0ea5e9;
+        --color-primary-600: #0284c7;
+        --color-primary-700: #0369a1;
+        --color-primary-800: #075985;
+        --color-primary-900: #0c4a6e;
+        --shadow-color: 14, 165, 233; /* RGB of primary-500 */
+        --titlebar-height: 32px;
+      }
+
+      body {
+        background-color: #f3f4f6;
+        transition: background-color 0.5s ease;
+        /* Better font rendering on Windows */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+        overflow: hidden; /* App handles scrolling internally */
+      }
+
+      /* Custom Scrollbar for macOS-like Feel */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2); /* More subtle, transparent dark */
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.4);
+      }
+
+      /* Electron Draggable Region */
+      .titlebar-drag-region {
+        -webkit-app-region: drag;
+        user-select: none;
+      }
+      .no-drag {
+        -webkit-app-region: no-drag;
+      }
+
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+      /* Advanced Lighting & Shadows */
+      .elevation-1 {
+        box-shadow: 
+          0 1px 2px rgba(0,0,0,0.05),
+          0 4px 12px rgba(var(--shadow-color), 0.05);
+        border: 1px solid rgba(255,255,255,0.6);
+      }
+      
+      .elevation-2 {
+        box-shadow: 
+          0 4px 8px rgba(0,0,0,0.05),
+          0 8px 24px rgba(var(--shadow-color), 0.12);
+        border: 1px solid rgba(255,255,255,0.7);
+        border-top: 1px solid rgba(255,255,255,0.9); /* Rim light */
+      }
+
+      .elevation-3 {
+        box-shadow: 
+          0 8px 16px rgba(0,0,0,0.05),
+          0 16px 32px -8px rgba(var(--shadow-color), 0.2);
+        border: 1px solid rgba(255,255,255,0.8);
+        border-top: 1px solid rgba(255,255,255,1.0);
+      }
+      
+      /* Rich Text Editor Styles */
+      .ProseMirror p { margin-bottom: 0.75em; }
+      .rich-text-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+      .rich-text-content ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
+      .rich-text-content b { font-weight: 700; }
+      .rich-text-content i { font-style: italic; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
