@@ -1,5 +1,6 @@
-import React, { useRef, useEffect } from 'react';
-import { Bold, Italic, List, ListOrdered, Palette } from 'lucide-react';
+
+import React, { useRef, useEffect, useState } from 'react';
+import { Bold, Italic, List, ListOrdered, Palette, ChevronDown } from 'lucide-react';
 
 interface RichEditorProps {
   content: string;
@@ -7,16 +8,50 @@ interface RichEditorProps {
   placeholder?: string;
 }
 
+const PRESET_COLORS = [
+    '#000000', // Black
+    '#64748b', // Slate
+    '#ef4444', // Red
+    '#f97316', // Orange
+    '#f59e0b', // Amber
+    '#84cc16', // Lime
+    '#22c55e', // Green
+    '#10b981', // Emerald
+    '#06b6d4', // Cyan
+    '#3b82f6', // Blue
+    '#6366f1', // Indigo
+    '#8b5cf6', // Violet
+    '#d946ef', // Fuchsia
+    '#ec4899', // Pink
+];
+
 export const RichEditor: React.FC<RichEditorProps> = ({ content, onChange, placeholder }) => {
   const editorRef = useRef<HTMLDivElement>(null);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const colorPickerRef = useRef<HTMLDivElement>(null);
 
-  // Sync initial content only once to avoid cursor jumping
+  // Sync initial content only once
   useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML !== content) {
       if (content === '' && editorRef.current.innerHTML === '<br>') return;
       editorRef.current.innerHTML = content;
     }
-  }, []); // Empty dependency mainly, real sync happens via blur/input if needed but kept simple here
+  }, []); 
+
+  // Handle clicking outside to close picker
+  useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+          if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
+              setShowColorPicker(false);
+          }
+      };
+      if (showColorPicker) {
+          document.addEventListener('mousedown', handleClickOutside);
+      }
+      return () => {
+          document.removeEventListener('mousedown', handleClickOutside);
+      };
+  }, [showColorPicker]);
 
   const handleInput = () => {
     if (editorRef.current) {
@@ -28,6 +63,7 @@ export const RichEditor: React.FC<RichEditorProps> = ({ content, onChange, place
     document.execCommand(command, false, value);
     if (editorRef.current) editorRef.current.focus();
     handleInput();
+    if (command === 'foreColor') setShowColorPicker(false);
   };
 
   return (
@@ -48,16 +84,47 @@ export const RichEditor: React.FC<RichEditorProps> = ({ content, onChange, place
           <ListOrdered className="w-4 h-4" />
         </button>
         <div className="w-px h-4 bg-gray-300 mx-1"></div>
-        <div className="relative group">
-            <button className="p-2 hover:bg-black/5 text-gray-700 rounded-lg transition-colors">
+        
+        {/* Color Picker */}
+        <div className="relative" ref={colorPickerRef}>
+            <button 
+                onClick={() => setShowColorPicker(!showColorPicker)}
+                className={`p-2 rounded-lg transition-colors flex items-center gap-1 ${showColorPicker ? 'bg-black/10' : 'hover:bg-black/5'}`}
+            >
                 <Palette className="w-4 h-4 text-primary-600" />
+                <ChevronDown className="w-3 h-3 text-gray-400" />
             </button>
-            <div className="absolute top-full left-0 mt-2 p-2 bg-white rounded-xl shadow-xl hidden group-hover:flex gap-2 z-20 border border-gray-100">
-                <button onClick={() => exec('foreColor', '#000000')} className="w-5 h-5 rounded-full bg-black border border-gray-200"></button>
-                <button onClick={() => exec('foreColor', '#ef4444')} className="w-5 h-5 rounded-full bg-red-500 border border-gray-200"></button>
-                <button onClick={() => exec('foreColor', '#3b82f6')} className="w-5 h-5 rounded-full bg-blue-500 border border-gray-200"></button>
-                <button onClick={() => exec('foreColor', '#22c55e')} className="w-5 h-5 rounded-full bg-green-500 border border-gray-200"></button>
-            </div>
+            
+            {showColorPicker && (
+                <div className="absolute top-full left-0 mt-2 p-3 bg-white rounded-xl shadow-xl z-50 border border-gray-100 animate-in slide-in-from-top-2 w-48">
+                     <div className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Presets</div>
+                     <div className="grid grid-cols-7 gap-2 mb-3">
+                         {PRESET_COLORS.map(color => (
+                             <button 
+                                key={color}
+                                onClick={() => exec('foreColor', color)} 
+                                className="w-5 h-5 rounded-full border border-gray-200 hover:scale-125 transition-transform"
+                                style={{ backgroundColor: color }}
+                                title={color}
+                             />
+                         ))}
+                     </div>
+                     <div className="h-px bg-gray-100 my-2"></div>
+                     <div className="flex items-center gap-2">
+                        <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-200 shadow-inner group cursor-pointer hover:scale-105 transition-transform">
+                             {/* Rainbow Gradient BG */}
+                             <div className="absolute inset-0 bg-gradient-to-br from-red-400 via-green-400 to-blue-400"></div>
+                             {/* Native Color Input hidden on top */}
+                             <input 
+                                type="color" 
+                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                onChange={(e) => exec('foreColor', e.target.value)}
+                             />
+                        </div>
+                        <span className="text-xs text-gray-500 font-medium">Custom</span>
+                     </div>
+                </div>
+            )}
         </div>
       </div>
 

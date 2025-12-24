@@ -199,18 +199,24 @@ const App: React.FC = () => {
       }
   };
 
-  const filteredEntries = entries.filter(e => 
-    e.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    e.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    e.tags.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredEntries = entries.filter(e => {
+    const term = searchTerm.toLowerCase();
+    const dateStr = e.createdAt.split('T')[0]; // Format: YYYY-MM-DD
+    
+    return (
+      e.title.toLowerCase().includes(term) || 
+      e.content.toLowerCase().includes(term) ||
+      e.tags.some(t => t.toLowerCase().includes(term)) ||
+      dateStr.includes(term)
+    );
+  });
 
   const toggleLanguage = () => {
       setLanguage(prev => prev === 'en' ? 'zh' : 'en');
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex justify-center text-gray-800 font-sans selection:bg-primary-200 selection:text-primary-900 transition-colors duration-500 overflow-hidden">
+    <div className="h-screen bg-stripes-animated flex justify-center text-gray-800 font-sans selection:bg-primary-200 selection:text-primary-900 transition-colors duration-500 overflow-hidden">
        {/* Lightbox for full screen images */}
        <Lightbox 
           isOpen={lightboxState.isOpen} 
@@ -228,9 +234,9 @@ const App: React.FC = () => {
        />
 
         {/* Main Desktop Container with Mesh Gradient Background */}
-      <div className="w-full h-full bg-gradient-to-br from-white via-surface-50 to-primary-50 shadow-2xl relative flex flex-col max-w-7xl border-x border-gray-200 animate-gradient-xy">
+      <div className="w-full h-full bg-gradient-to-br from-white via-surface-50 to-primary-50 shadow-2xl relative flex flex-col max-w-7xl border-x border-gray-200 animate-gradient-xy z-10">
         
-        {/* Ambient background blobs */}
+        {/* Ambient background blobs inside the main frame */}
         <div className="absolute top-0 left-0 w-96 h-96 bg-primary-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
         <div className="absolute -bottom-32 left-20 w-96 h-96 bg-pink-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
@@ -338,42 +344,20 @@ const App: React.FC = () => {
             </header>
 
             {/* Main Content */}
-            <main className="flex-1 p-6 overflow-y-auto w-full relative z-10">
-              <div className="max-w-5xl mx-auto w-full pb-24">
+            <main className="flex-1 p-6 overflow-hidden w-full relative z-10 flex flex-col">
+              <div className="max-w-5xl mx-auto w-full h-full">
               {view === 'calendar' ? (
-                  <div className="animate-in zoom-in-95 duration-500 flex flex-col md:flex-row gap-6">
-                      <div className="flex-1">
+                  <div className="animate-in zoom-in-95 duration-500 h-full">
                         <CalendarView 
                             entries={entries} 
-                            onDateSelect={(date) => {
-                            const formatted = date.toISOString().split('T')[0];
-                            const found = entries.filter(e => e.createdAt.startsWith(formatted));
-                            if (found.length > 0) {
-                                setSearchTerm(formatted);
-                                setView('list'); 
-                            }
-                            }} 
+                            onDateSelect={() => {}} // Handled internally in CalendarView
                             language={language}
                             onImageClick={handleImageClick}
+                            onEntryClick={openEditor}
                         />
-                      </div>
-                      <div className="w-full md:w-80 shrink-0">
-                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">{t.recentMemories}</h3>
-                        <div className="grid grid-cols-1 gap-4">
-                             {entries.slice(0, 3).map(entry => (
-                                <EntryCard 
-                                    key={entry.id} 
-                                    entry={entry} 
-                                    onClick={openEditor} 
-                                    language={language}
-                                    onImageClick={handleImageClick}
-                                />
-                             ))}
-                        </div>
-                      </div>
                   </div>
               ) : (
-                  <>
+                  <div className="h-full overflow-y-auto pb-24 scroll-smooth">
                     {filteredEntries.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-[60vh] text-center">
                             <div className="relative">
@@ -398,7 +382,7 @@ const App: React.FC = () => {
                             ))}
                         </div>
                     )}
-                  </>
+                  </div>
               )}
               </div>
             </main>

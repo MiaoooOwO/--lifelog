@@ -37,14 +37,15 @@ export const Editor: React.FC<EditorProps> = ({ onSave, onCancel, onDelete, exis
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      Array.from(files).forEach(file => {
+      Array.from(files).forEach((file) => {
         const reader = new FileReader();
         reader.onloadend = () => {
           if (reader.result) {
               setImages(prev => [...prev, reader.result as string]);
           }
         };
-        reader.readAsDataURL(file);
+        // Explicitly cast to Blob to handle cases where file is inferred as unknown
+        reader.readAsDataURL(file as Blob);
       });
     }
   };
